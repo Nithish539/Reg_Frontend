@@ -1,0 +1,159 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Page</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #eef1f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+            width: 320px;
+            margin-top: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            font-size: 1.2rem;
+        }
+
+        label {
+            font-weight: 600;
+            margin-top: 8px;
+            display: block;
+            font-size: 0.9rem;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 8px;
+            margin-top: 4px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+            button:hover {
+                background-color: #0056b3;
+            }
+
+        table {
+            width: 90%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Register</h2>
+        <form id="registrationForm">
+            <label for="firstName">First Name *</label>
+            <input type="text" id="firstName" required>
+
+            <label for="lastName">Last Name *</label>
+            <input type="text" id="lastName" required>
+
+            <label for="email">E-Mail ID *</label>
+            <input type="email" id="email" required>
+
+            <label for="password">Password *</label>
+            <input type="password" id="password" required minlength="6">
+
+            <label for="state">State *</label>
+            <select id="state" required>
+                <option value="">Select State</option>
+                <option value="Telangana">Telangana</option>
+                <option value="Karnataka">Karnataka</option>
+                <option value="Maharashtra">Maharashtra</option>
+            </select>
+
+            <label for="organization">Organization</label>
+            <input type="text" id="organization">
+
+            <button type="submit">Register</button>
+        </form>
+    </div>
+
+    <h2>Users</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>E-Mail</th>
+                <th>State</th>
+                <th>Organization</th>
+            </tr>
+        </thead>
+        <tbody id="userTableBody">
+            <!-- Data will be added dynamically here -->
+        </tbody>
+    </table>
+
+    <script>
+        document.getElementById("registrationForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            const firstName = document.getElementById("firstName").value;
+            const lastName = document.getElementById("lastName").value;
+            const email = document.getElementById("email").value;
+            const state = document.getElementById("state").value;
+            const organization = document.getElementById("organization").value || "N/A";
+
+            const tableBody = document.getElementById("userTableBody");
+            const newRow = document.createElement("tr");
+            newRow.innerHTML = `
+                    <td>${firstName}</td>
+                    <td>${lastName}</td>
+                    <td>${email}</td>
+                    <td>${state}</td>
+                    <td>${organization}</td>
+                `;
+
+            tableBody.appendChild(newRow);
+
+            this.reset(); // Reset form after submission
+        });
+    </script>
+</body>
+</html>
