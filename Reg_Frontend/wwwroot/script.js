@@ -9,6 +9,6 @@
 
 async function loadStates() {
     try {
-        let response = await fetch("https://yourapi.com/api/states");  // Replace with your API URL
+        let response = await fetch("https://yourapi.com/api/states");
         let states = await response.json();
         let stateDropdown = document

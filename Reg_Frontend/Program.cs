@@ -5,7 +5,7 @@ builder.Services.AddEndpointsApiExplorer();
 
 var app = builder.Build();
 
-app.UseStaticFiles();  // ✅ This serves files from wwwroot
+app.UseStaticFiles(); 
 app.UseRouting();
 app.UseAuthorization();
 
