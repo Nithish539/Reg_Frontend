@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="C:\Users\ADMIN\OneDrive - Phoenix Infratech %28India%29 Private Limited\Desktop\registration.html\registration.html" Link="registration.html" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Controllers\" />
   </ItemGroup>
 
