@@ -67,7 +67,6 @@ public class UserService
         }
     }
 
-
     public bool ValidateUser(string email, string password)
     {
         using (SqlConnection connection = new SqlConnection(_connectionString))
@@ -87,6 +86,52 @@ public class UserService
         }
     }
 
+    public async Task<bool> ValidateEmailAsync(string email)
+    {
+        try
+        {
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                string sql = "SELECT COUNT(*) FROM dbo.Users WHERE Email = @Email";
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Email", email);
+                    await conn.OpenAsync();
+                    int count = (int)await cmd.ExecuteScalarAsync();
+                    return count > 0;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error validating email: " + ex.Message);
+            return false;
+        }
+    }
+
+    public async Task<bool> ResetPasswordAsync(string email, string newPassword)
+    {
+        try
+        {
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                string sql = "UPDATE dbo.Users SET PasswordHash = @PasswordHash WHERE Email = @Email";
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Email", email);
+                    cmd.Parameters.AddWithValue("@PasswordHash", BCrypt.Net.BCrypt.HashPassword(newPassword));
+                    await conn.OpenAsync();
+                    int rowsAffected = await cmd.ExecuteNonQueryAsync();
+                    return rowsAffected > 0;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error resetting password: " + ex.Message);
+            return false;
+        }
+    }
 
     private byte[] HashPassword(string password)
     {

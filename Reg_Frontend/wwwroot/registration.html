@@ -1,14 +1,13 @@
-﻿﻿﻿
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registration & Login</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VectorQ.ai - Registration & Login</title>
     <style>
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #eef1f6;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to right, #e0ecf8, #f5f9ff);
             margin: 0;
             padding: 0;
             display: flex;
@@ -16,70 +15,97 @@
             align-items: center;
         }
 
+        h1 {
+            margin-top: 30px;
+            font-size: 2rem;
+            color: #0056b3;
+        }
+
         .container {
             background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
-            width: 320px;
-            margin-top: 20px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            margin: 20px 0;
         }
 
         h2 {
             text-align: center;
             color: #333;
-            font-size: 1.2rem;
+            font-size: 1.6rem;
+            margin-bottom: 25px;
         }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+            .form-row > div {
+                flex: 1;
+            }
 
         label {
             font-weight: 600;
-            margin-top: 8px;
-            display: block;
             font-size: 0.9rem;
+            margin-bottom: 6px;
+            display: block;
+            color: #333;
         }
 
         input, select, button {
             width: 100%;
-            padding: 8px;
-            margin-top: 4px;
+            padding: 10px 12px;
             border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 0.9rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
         }
+
+            input:focus, select:focus {
+                border-color: #007bff;
+                outline: none;
+            }
 
         button {
             background-color: #007bff;
             color: white;
             border: none;
-            cursor: pointer;
-            margin-top: 10px;
             font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
             button:hover {
                 background-color: #0056b3;
             }
 
-        /* Grid Table */
         .grid-container {
             margin-top: 20px;
-            width: 90%;
-            max-width: 600px;
-            display: block;
+            width: 95%;
+            max-width: 800px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
             background: white;
-            border-radius: 8px;
-            box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             font-size: 0.9rem;
         }
 
         th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            padding: 12px 14px;
             text-align: left;
         }
 
@@ -88,17 +114,22 @@
             color: white;
         }
 
-        /* Toast Notification */
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
         .toast {
             position: fixed;
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
             background: #28a745;
-            color: #fff;
-            padding: 8px 16px;
-            border-radius: 4px;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
             display: none;
+            font-weight: bold;
+            z-index: 1000;
         }
 
         p {
@@ -118,22 +149,28 @@
     </style>
 </head>
 <body>
+    <h1>Welcome to VectorQ.ai</h1>
 
     <!-- Registration Form -->
     <div class="container" id="registerContainer">
         <h2>Register</h2>
         <form id="registrationForm">
-            <label for="firstName">First Name *</label>
-            <input type="text" id="firstName" required>
+            <div class="form-row">
+                <div>
+                    <label for="firstName">First Name *</label>
+                    <input type="text" id="firstName" required />
+                </div>
+                <div>
+                    <label for="lastName">Last Name *</label>
+                    <input type="text" id="lastName" required />
+                </div>
+            </div>
 
-            <label for="lastName">Last Name *</label>
-            <input type="text" id="lastName" required>
+            <label for="regEmail">E-Mail ID *</label>
+            <input type="email" id="regEmail" required />
 
-            <label for="email">E-Mail ID *</label>
-            <input type="email" id="regEmail" required>
-
-            <label for="password">Password *</label>
-            <input type="password" id="regPassword" required minlength="6">
+            <label for="regPassword">Password *</label>
+            <input type="password" id="regPassword" required minlength="6" />
 
             <label for="state">State *</label>
             <select id="state" required>
@@ -144,16 +181,14 @@
             </select>
 
             <label for="organization">Organization</label>
-            <input type="text" id="organization">
+            <input type="text" id="organization" />
 
-            <!-- Login link -->
-            <p>Already Registered? <a href="#" onclick="toggleForms()">Login here</a></p>
-
+            <p>Already Registered? <a href="#" onclick="toggleForms('login')">Login here</a></p>
             <button type="submit">Register</button>
         </form>
     </div>
 
-    <!-- Registration Grid -->
+    <!-- Registered Users Grid -->
     <div class="grid-container" id="gridContainer">
         <h2>Registered Users</h2>
         <table>
@@ -166,8 +201,7 @@
                     <th>Organization</th>
                 </tr>
             </thead>
-            <tbody id="userTableBody">
-            </tbody>
+            <tbody id="userTableBody"></tbody>
         </table>
     </div>
 
@@ -176,44 +210,104 @@
         <h2>Login</h2>
         <form id="loginForm">
             <label for="loginEmail">E-Mail ID *</label>
-            <input type="email" id="loginEmail" required>
+            <input type="email" id="loginEmail" required />
 
             <label for="loginPassword">Password *</label>
-            <input type="password" id="loginPassword" required>
+            <input type="password" id="loginPassword" required />
 
-            <!-- Registration link -->
-            <p>New User? <a href="#" onclick="toggleForms()">Sign in here</a></p>
+            <p><a href="#" onclick="toggleForms('forgot')">Forgot Password?</a></p>
+            <p>New User? <a href="#" onclick="toggleForms('register')">Sign up here</a></p>
 
             <button type="submit">Login</button>
         </form>
     </div>
 
+    <!-- Forgot Password -->
+    <div class="container" id="forgotPasswordContainer" style="display: none;">
+        <h2>Reset Password</h2>
+        <form id="forgotPasswordForm">
+            <label for="forgotEmail">Enter Registered E-Mail ID</label>
+            <input type="email" id="forgotEmail" required />
+            <button type="submit">Validate Email</button>
+        </form>
+
+        <div id="resetPasswordFields" style="display: none; margin-top: 20px;">
+            <label for="newPassword">Enter New Password</label>
+            <input type="password" id="newPassword" required />
+
+            <label for="confirmPassword">Confirm New Password</label>
+            <input type="password" id="confirmPassword" required />
+
+            <button onclick="submitNewPassword()">Reset Password</button>
+        </div>
+
+        <p><a href="#" onclick="toggleForms('login')">Back to Login</a></p>
+    </div>
+
     <div id="toast" class="toast">Success</div>
 
     <script>
-        function toggleForms() {
-            const reg = document.getElementById("registerContainer");
-            const login = document.getElementById("loginContainer");
-            const grid = document.getElementById("gridContainer");
+        function toggleForms(target = "register") {
+            document.getElementById("registerContainer").style.display = (target === "register") ? "block" : "none";
+            document.getElementById("loginContainer").style.display = (target === "login") ? "block" : "none";
+            document.getElementById("forgotPasswordContainer").style.display = (target === "forgot") ? "block" : "none";
+            document.getElementById("gridContainer").style.display = (target === "register") ? "block" : "none";
+        }
 
-            if (reg.style.display === "none") {
-                reg.style.display = "block";
-                grid.style.display = "block";
-                login.style.display = "none";
-            } else {
-                reg.style.display = "none";
-                grid.style.display = "none";
-                login.style.display = "block";
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.style.display = "block";
+            setTimeout(() => { toast.style.display = "none"; }, 3000);
+        }
+
+        document.getElementById("registrationForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
+            const payload = {
+                firstName: document.getElementById("firstName").value,
+                lastName: document.getElementById("lastName").value,
+                email: document.getElementById("regEmail").value,
+                password: document.getElementById("regPassword").value,
+                state: document.getElementById("state").value,
+                organization: document.getElementById("organization").value
+            };
+
+            try {
+                const response = await fetch("/api/registration/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    showToast("Registration Successful!");
+                    addRowToTable(payload);
+                } else {
+                    showToast("Error: " + (result.message || "Unknown error"));
+                }
+            } catch (error) {
+                showToast("Error connecting to server: " + error.message);
             }
+        });
+
+        function addRowToTable(user) {
+            const row = `<tr>
+              <td>${user.firstName}</td>
+              <td>${user.lastName}</td>
+              <td>${user.email}</td>
+              <td>${user.state}</td>
+              <td>${user.organization}</td>
+            </tr>`;
+            document.getElementById("userTableBody").innerHTML += row;
         }
 
         document.getElementById("loginForm").addEventListener("submit", async function (event) {
             event.preventDefault();
-
-            const email = document.getElementById("loginEmail").value;
-            const password = document.getElementById("loginPassword").value;
-
-            const loginData = { email, password };
+            const loginData = {
+                email: document.getElementById("loginEmail").value,
+                password: document.getElementById("loginPassword").value
+            };
 
             try {
                 const response = await fetch('/api/users/login', {
@@ -226,76 +320,73 @@
                 if (response.ok && result.success) {
                     showToast("Login Successful!");
                 } else {
-                    alert(result.message || "Login failed.");
+                    showToast(result.message || "Login failed.");
                 }
             } catch (error) {
-                alert("Server error: " + error);
+                showToast("Server error: " + error.message);
             }
         });
 
-
-        document.getElementById("registrationForm").addEventListener("submit", async function (event) {
+        document.getElementById("forgotPasswordForm").addEventListener("submit", async function (event) {
             event.preventDefault();
-
-            const firstName = document.getElementById("firstName").value;
-            const lastName = document.getElementById("lastName").value;
-            const email = document.getElementById("regEmail").value;
-            const password = document.getElementById("regPassword").value;
-            const state = document.getElementById("state").value;
-            const organization = document.getElementById("organization").value;
-
-            const payload = {
-                firstName,
-                lastName,
-                email,
-                password,
-                state,
-                organization
-            };
+            const email = document.getElementById("forgotEmail").value;
 
             try {
-                const response = await fetch("https://localhost:7201/api/registration/register", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(payload)
+                const response = await fetch('/api/users/validate-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
                 });
 
                 const result = await response.json();
-
-                if (response.ok) {
-                    showToast("Registration Successful!");
-                    addRowToTable(firstName, lastName, email, state, organization);
+                if (response.ok && result.valid) {
+                    showToast("Email validated. You can now reset your password.");
+                    document.getElementById("resetPasswordFields").style.display = "block";
                 } else {
-                    showToast("Error: " + result.message || "Unknown error");
+                    showToast(result.message || "Email not found.");
                 }
             } catch (error) {
-                showToast("Error connecting to server: " + error.message);
-                console.error(error);
+                showToast("Error validating email.");
             }
         });
 
-        function addRowToTable(firstName, lastName, email, state, organization) {
-            const tableBody = document.getElementById("userTableBody");
-            const newRow = document.createElement("tr");
-            newRow.innerHTML = `
-        <td>${firstName}</td>
-        <td>${lastName}</td>
-        <td>${email}</td>
-        <td>${state}</td>
-        <td>${organization}</td>
-    `;
-            tableBody.appendChild(newRow);
-        }
+        async function submitNewPassword() {
+            const email = document.getElementById("forgotEmail").value;
+            const newPassword = document.getElementById("newPassword").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
 
-        function showToast(message) {
-            const toast = document.getElementById("toast");
-            toast.innerText = message;
-            toast.style.display = "block";
-            setTimeout(() => {
-                toast.style.display = "none";
-            }, 3000);
+            if (!newPassword || !confirmPassword) {
+                showToast("Password fields cannot be empty.");
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                showToast("Password must be at least 6 characters.");
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showToast("Passwords does not matched.");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/users/reset-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, newPassword })
+                });
+
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    showToast("Password reset successful!");
+                    toggleForms("login");
+                } else {
+                    showToast(result.message || "Password reset failed.");
+                }
+            } catch (error) {
+                showToast("Error resetting password.");
+            }
         }
     </script>
 </body>

@@ -3,6 +3,7 @@
 // Add services
 builder.Services.AddControllers();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddSingleton<UserService>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
