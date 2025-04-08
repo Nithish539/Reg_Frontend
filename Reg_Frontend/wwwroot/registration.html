@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -143,7 +143,7 @@
             </select>
 
             <label for="organization">Organization</label>
-            <input type="text" id="organization">
+            <input type="text" id="organization"> || "NA"
 
             <!-- Login link -->
             <p>Already Registered? <a href="#" onclick="toggleForms()">Login here</a></p>
@@ -191,75 +191,113 @@
 
     <script>
         function toggleForms() {
-            let registerForm = document.getElementById("registerContainer");
-            let loginForm = document.getElementById("loginContainer");
-            let gridContainer = document.getElementById("gridContainer");
+            const reg = document.getElementById("registerContainer");
+            const login = document.getElementById("loginContainer");
+            const grid = document.getElementById("gridContainer");
 
-            if (registerForm.style.display === "none") {
-                registerForm.style.display = "block";
-                gridContainer.style.display = "block";
-                loginForm.style.display = "none";
+            if (reg.style.display === "none") {
+                reg.style.display = "block";
+                grid.style.display = "block";
+                login.style.display = "none";
             } else {
-                registerForm.style.display = "none";
-                gridContainer.style.display = "none"; // Hide grid when switching to login
-                loginForm.style.display = "block";
+                reg.style.display = "none";
+                grid.style.display = "none";
+                login.style.display = "block";
             }
         }
 
-        document.getElementById("registrationForm").addEventListener("submit", function (event) {
+        document.getElementById("loginForm").addEventListener("submit", async function (event) {
             event.preventDefault();
 
-            // Get input values
+            const email = document.getElementById("loginEmail").value;
+            const password = document.getElementById("loginPassword").value;
+
+            const loginData = { email, password };
+
+            try {
+                const response = await fetch('/api/users/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(loginData)
+                });
+
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    showToast("Login Successful!");
+                } else {
+                    alert(result.message || "Login failed.");
+                }
+            } catch (error) {
+                alert("Server error: " + error);
+            }
+        });
+
+
+        document.getElementById("registrationForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
+
             const firstName = document.getElementById("firstName").value;
             const lastName = document.getElementById("lastName").value;
             const email = document.getElementById("regEmail").value;
+            const password = document.getElementById("regPassword").value;
             const state = document.getElementById("state").value;
-            const organization = document.getElementById("organization").value || "N/A";
+            const organization = document.getElementById("organization").value; || "NA";
 
-            // Validation (Ensure that all fields are entered)
-            if (!firstName || !lastName || !email || !state) {
-                alert("Please fill all required fields.");
-                return;
+            const payload = {
+                firstName,
+                lastName,
+                email,
+                password,
+                state,
+                organization
+            };
+
+            try {
+                const response = await fetch("https://localhost:7201/api/registration/register", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    showToast("Registration Successful!");
+
+                    // Add to local table
+                    const tableBody = document.getElementById("userTableBody");
+                    const newRow = document.createElement("tr");
+                    newRow.innerHTML = `
+                        <td>${firstName}</td>
+                        <td>${lastName}</td>
+                        <td>${email}</td>
+                        <td>${state}</td>
+                        <td>${organization}</td>
+                    `;
+                    tableBody.appendChild(newRow);
+
+                    this.reset();
+                } else {
+                    const error = await response.json();
+                    showToast("Error: " + error.message);
+                }
+            } catch (error) {
+                showToast("Error connecting to server");
+                console.error(error);
             }
-
-            // Add to table
-            const tableBody = document.getElementById("userTableBody");
-            const newRow = document.createElement("tr");
-            newRow.innerHTML = `
-                    <td>${firstName}</td>
-                    <td>${lastName}</td>
-                    <td>${email}</td>
-                    <td>${state}</td>
-                    <td>${organization}</td>
-                `;
-            tableBody.appendChild(newRow);
-
-            // Show toast
-            showToast("Registration Successful!");
-
-            // reset form
-            this.reset();
-        });
-
-        document.getElementById("loginForm").addEventListener("submit", function (event) {
-            event.preventDefault();
-
-            showToast("Login Successful!");
-
-            // Clear login fields
-            document.getElementById("loginEmail").value = "";
-            document.getElementById("loginPassword").value = "";
         });
 
         function showToast(message) {
             const toast = document.getElementById("toast");
             toast.innerText = message;
             toast.style.display = "block";
-
             setTimeout(() => {
                 toast.style.display = "none";
             }, 3000);
         }
+    </script>
+
+
     </script>
 
 </body>

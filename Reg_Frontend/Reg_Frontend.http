@@ -1,6 +1,0 @@
-@Reg_Frontend_HostAddress = http://localhost:5296
-
-GET {{Reg_Frontend_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
