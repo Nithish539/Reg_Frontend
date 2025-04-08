@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/registration")]
 public class RegistrationController : ControllerBase
 {
     private readonly UserService _userService;
@@ -12,21 +12,28 @@ public class RegistrationController : ControllerBase
     }
 
     [HttpPost("register")]
-    public IActionResult Register([FromBody] UserDto user)
+    public IActionResult Register([FromBody] RegisterRequest request)
     {
         try
         {
-            _userService.SaveUser(user.FirstName, user.LastName, user.Email, user.Password, user.State, user.Organization);
-            return Ok(new { message = "User registered successfully." });
+            _userService.SaveUser(
+                request.FirstName,
+                request.LastName,
+                request.Email,
+                request.Password,
+                request.State,
+                request.Organization);
+
+            return Ok(new { success = true, message = "User registered successfully." });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = ex.Message });
+            return StatusCode(500, new { success = false, message = ex.Message });
         }
     }
 }
 
-public class UserDto
+public class RegisterRequest
 {
     public string FirstName { get; set; }
     public string LastName { get; set; }

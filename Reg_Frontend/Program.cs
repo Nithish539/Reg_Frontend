@@ -1,21 +1,23 @@
 ﻿var builder = WebApplication.CreateBuilder(args);
 
+// Add services
 builder.Services.AddControllers();
 builder.Services.AddScoped<UserService>();
-builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
     });
 });
 
 var app = builder.Build();
 
 app.UseCors("AllowAll");
-app.UseStaticFiles();
 app.UseRouting();
+app.UseStaticFiles();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();

@@ -1,4 +1,5 @@
-﻿﻿<!DOCTYPE html>
+﻿﻿﻿
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -143,7 +144,7 @@
             </select>
 
             <label for="organization">Organization</label>
-            <input type="text" id="organization"> || "NA"
+            <input type="text" id="organization">
 
             <!-- Login link -->
             <p>Already Registered? <a href="#" onclick="toggleForms()">Login here</a></p>
@@ -241,7 +242,7 @@
             const email = document.getElementById("regEmail").value;
             const password = document.getElementById("regPassword").value;
             const state = document.getElementById("state").value;
-            const organization = document.getElementById("organization").value; || "NA";
+            const organization = document.getElementById("organization").value;
 
             const payload = {
                 firstName,
@@ -261,31 +262,32 @@
                     body: JSON.stringify(payload)
                 });
 
+                const result = await response.json();
+
                 if (response.ok) {
                     showToast("Registration Successful!");
-
-                    // Add to local table
-                    const tableBody = document.getElementById("userTableBody");
-                    const newRow = document.createElement("tr");
-                    newRow.innerHTML = `
-                        <td>${firstName}</td>
-                        <td>${lastName}</td>
-                        <td>${email}</td>
-                        <td>${state}</td>
-                        <td>${organization}</td>
-                    `;
-                    tableBody.appendChild(newRow);
-
-                    this.reset();
+                    addRowToTable(firstName, lastName, email, state, organization);
                 } else {
-                    const error = await response.json();
-                    showToast("Error: " + error.message);
+                    showToast("Error: " + result.message || "Unknown error");
                 }
             } catch (error) {
-                showToast("Error connecting to server");
+                showToast("Error connecting to server: " + error.message);
                 console.error(error);
             }
         });
+
+        function addRowToTable(firstName, lastName, email, state, organization) {
+            const tableBody = document.getElementById("userTableBody");
+            const newRow = document.createElement("tr");
+            newRow.innerHTML = `
+        <td>${firstName}</td>
+        <td>${lastName}</td>
+        <td>${email}</td>
+        <td>${state}</td>
+        <td>${organization}</td>
+    `;
+            tableBody.appendChild(newRow);
+        }
 
         function showToast(message) {
             const toast = document.getElementById("toast");
@@ -296,9 +298,5 @@
             }, 3000);
         }
     </script>
-
-
-    </script>
-
 </body>
 </html>
