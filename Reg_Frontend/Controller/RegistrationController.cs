@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 [ApiController]
 [Route("api/registration")]
@@ -12,11 +13,11 @@ public class RegistrationController : ControllerBase
     }
 
     [HttpPost("register")]
-    public IActionResult Register([FromBody] RegisterRequest request)
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
         try
         {
-            _userService.SaveUser(
+            bool success = await _userService.SaveUserAsync(
                 request.FirstName,
                 request.LastName,
                 request.Email,
@@ -24,7 +25,10 @@ public class RegistrationController : ControllerBase
                 request.State,
                 request.Organization);
 
-            return Ok(new { success = true, message = "User registered successfully." });
+            if (success)
+                return Ok(new { success = true, message = "User registered successfully." });
+            else
+                return BadRequest(new { success = false, message = "Failed to register user." });
         }
         catch (Exception ex)
         {

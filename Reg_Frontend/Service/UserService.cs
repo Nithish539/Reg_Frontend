@@ -1,9 +1,7 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
-using System.Data;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
+using BCrypt.Net;
 
 public class UserService
 {
@@ -16,66 +14,36 @@ public class UserService
 
     public async Task<bool> SaveUserAsync(string firstName, string lastName, string email, string password, string state, string organization)
     {
-        try
+        var hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
+
+        using (SqlConnection conn = new SqlConnection(_connectionString))
         {
-            using (SqlConnection conn = new SqlConnection(_connectionString))
+            string query = "INSERT INTO dbo.Users (FirstName, LastName, Email, PasswordHash, State, Organization) VALUES (@FirstName, @LastName, @Email, @PasswordHash, @State, @Organization)";
+            using (SqlCommand cmd = new SqlCommand(query, conn))
             {
-                string sql = @"
-                   INSERT INTO dbo.Users (FirstName, LastName, Email, PasswordHash, State, Organization)
-                   VALUES (@FirstName, @LastName, @Email, @PasswordHash, @State, @Organization)";
+                cmd.Parameters.AddWithValue("@FirstName", firstName);
+                cmd.Parameters.AddWithValue("@LastName", lastName);
+                cmd.Parameters.AddWithValue("@Email", email);
+                cmd.Parameters.AddWithValue("@PasswordHash", hashedPassword);
+                cmd.Parameters.AddWithValue("@State", state);
+                cmd.Parameters.AddWithValue("@Organization", organization);
 
-                using (SqlCommand cmd = new SqlCommand(sql, conn))
-                {
-                    byte[] hashedPassword = HashPassword(password);
-
-                    cmd.Parameters.AddWithValue("@FirstName", firstName);
-                    cmd.Parameters.AddWithValue("@LastName", lastName);
-                    cmd.Parameters.AddWithValue("@Email", email);
-                    cmd.Parameters.AddWithValue("@PasswordHash", hashedPassword);
-                    cmd.Parameters.AddWithValue("@State", string.IsNullOrEmpty(state) ? DBNull.Value : (object)state);
-                    cmd.Parameters.AddWithValue("@Organization", string.IsNullOrEmpty(organization) ? DBNull.Value : (object)organization);
-
-                    conn.Open();
-                    int rowsAffected = await cmd.ExecuteNonQueryAsync();
-                    return rowsAffected > 0;
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Error saving user: " + ex.Message);
-            return false;
-        }
-    }
-
-    public void SaveUser(string firstName, string lastName, string email, string password, string state, string organization)
-    {
-        using (SqlConnection connection = new SqlConnection(_connectionString))
-        {
-            connection.Open();
-            using (SqlCommand command = new SqlCommand("INSERT INTO dbo.Users (FirstName, LastName, Email, PasswordHash, State, Organization) VALUES (@FirstName, @LastName, @Email, @PasswordHash, @State, @Organization)", connection))
-            {
-                command.Parameters.AddWithValue("@FirstName", firstName);
-                command.Parameters.AddWithValue("@LastName", lastName);
-                command.Parameters.AddWithValue("@Email", email);
-                command.Parameters.AddWithValue("@PasswordHash", BCrypt.Net.BCrypt.HashPassword(password));
-                command.Parameters.AddWithValue("@State", state);
-                command.Parameters.AddWithValue("@Organization", string.IsNullOrEmpty(organization) ? DBNull.Value : (object)organization);
-
-                command.ExecuteNonQuery();
+                await conn.OpenAsync();
+                return await cmd.ExecuteNonQueryAsync() > 0;
             }
         }
     }
 
-    public bool ValidateUser(string email, string password)
+    public async Task<bool> ValidateUserAsync(string email, string password)
     {
-        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlConnection conn = new SqlConnection(_connectionString))
         {
-            connection.Open();
-            using (SqlCommand command = new SqlCommand("SELECT PasswordHash FROM dbo.Users WHERE Email = @Email", connection))
+            string query = "SELECT PasswordHash FROM dbo.Users WHERE Email = @Email";
+            using (SqlCommand cmd = new SqlCommand(query, conn))
             {
-                command.Parameters.AddWithValue("@Email", email);
-                var result = command.ExecuteScalar();
+                cmd.Parameters.AddWithValue("@Email", email);
+                await conn.OpenAsync();
+                var result = await cmd.ExecuteScalarAsync();
                 if (result != null)
                 {
                     string hashedPassword = result.ToString();
@@ -88,56 +56,33 @@ public class UserService
 
     public async Task<bool> ValidateEmailAsync(string email)
     {
-        try
+        using (SqlConnection conn = new SqlConnection(_connectionString))
         {
-            using (SqlConnection conn = new SqlConnection(_connectionString))
+            string query = "SELECT COUNT(*) FROM dbo.Users WHERE Email = @Email";
+            using (SqlCommand cmd = new SqlCommand(query, conn))
             {
-                string sql = "SELECT COUNT(*) FROM dbo.Users WHERE Email = @Email";
-                using (SqlCommand cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@Email", email);
-                    await conn.OpenAsync();
-                    int count = (int)await cmd.ExecuteScalarAsync();
-                    return count > 0;
-                }
+                cmd.Parameters.AddWithValue("@Email", email);
+                await conn.OpenAsync();
+                int count = (int)await cmd.ExecuteScalarAsync();
+                return count > 0;
             }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Error validating email: " + ex.Message);
-            return false;
         }
     }
 
     public async Task<bool> ResetPasswordAsync(string email, string newPassword)
     {
-        try
-        {
-            using (SqlConnection conn = new SqlConnection(_connectionString))
-            {
-                string sql = "UPDATE dbo.Users SET PasswordHash = @PasswordHash WHERE Email = @Email";
-                using (SqlCommand cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@Email", email);
-                    cmd.Parameters.AddWithValue("@PasswordHash", BCrypt.Net.BCrypt.HashPassword(newPassword));
-                    await conn.OpenAsync();
-                    int rowsAffected = await cmd.ExecuteNonQueryAsync();
-                    return rowsAffected > 0;
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Error resetting password: " + ex.Message);
-            return false;
-        }
-    }
+        var hashedPassword = BCrypt.Net.BCrypt.HashPassword(newPassword);
 
-    private byte[] HashPassword(string password)
-    {
-        using (SHA256 sha = SHA256.Create())
+        using (SqlConnection conn = new SqlConnection(_connectionString))
         {
-            return sha.ComputeHash(Encoding.UTF8.GetBytes(password));
+            string query = "UPDATE dbo.Users SET PasswordHash = @PasswordHash WHERE Email = @Email";
+            using (SqlCommand cmd = new SqlCommand(query, conn))
+            {
+                cmd.Parameters.AddWithValue("@Email", email);
+                cmd.Parameters.AddWithValue("@PasswordHash", hashedPassword);
+                await conn.OpenAsync();
+                return await cmd.ExecuteNonQueryAsync() > 0;
+            }
         }
     }
 }

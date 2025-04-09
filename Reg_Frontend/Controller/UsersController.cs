@@ -12,7 +12,7 @@ public class UsersController : ControllerBase
         _userService = userService;
     }
 
-    //  Validate Email
+    // Validate Email
     [HttpPost("validate-email")]
     public async Task<IActionResult> ValidateEmail([FromBody] EmailRequest request)
     {
@@ -23,7 +23,7 @@ public class UsersController : ControllerBase
             return BadRequest(new { valid = false, message = "Email not found." });
     }
 
-    //  Reset Password
+    // Reset Password
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
     {
@@ -34,11 +34,23 @@ public class UsersController : ControllerBase
             return BadRequest(new { success = false, message = "Failed to reset password." });
     }
 
+    // Forgot Password (Check if user exists before showing reset link in frontend toast)
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] EmailRequest request)
+    {
+        bool exists = await _userService.ValidateEmailAsync(request.Email);
+        if (!exists)
+            return NotFound(new { success = false, message = "Email not found." });
+
+        // You can also log the attempt here or trigger an actual email in future
+        return Ok(new { success = true, message = "Reset link generated." });
+    }
+
+    // ✅ Internal DTOs
     public class EmailRequest
     {
         public string Email { get; set; }
     }
-
     public class ResetPasswordRequest
     {
         public string Email { get; set; }
