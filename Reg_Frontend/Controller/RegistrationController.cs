@@ -17,13 +17,18 @@ public class RegistrationController : ControllerBase
     {
         try
         {
-            bool success = await _userService.SaveUserAsync(
-                request.FirstName,
-                request.LastName,
-                request.Email,
-                request.Password,
-                request.State,
-                request.Organization);
+            // Map to UserDto
+            var userDto = new UserDto
+            {
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                Email = request.Email,
+                Password = request.Password,
+                State = request.State,
+                Organization = request.Organization
+            };
+
+            bool success = await _userService.SaveUserAsync(userDto);
 
             if (success)
                 return Ok(new { success = true, message = "User registered successfully." });

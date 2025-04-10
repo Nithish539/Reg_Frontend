@@ -1,0 +1,141 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verify Email - VectorQ.ai</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e0f2fe;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .verify-container {
+            background: #fff;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #1e3a8a;
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 12px 0;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+
+        .verify-btn {
+            background: #2563eb;
+            color: white;
+        }
+
+            .verify-btn:hover {
+                background: #1d4ed8;
+            }
+
+        .cancel-btn {
+            background: #f87171;
+            color: white;
+        }
+
+            .cancel-btn:hover {
+                background: #ef4444;
+            }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 14px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 9999;
+            display: none;
+            font-weight: 500;
+        }
+
+            .toast.red {
+                background-color: #fee2e2;
+                color: #991b1b;
+            }
+
+            .toast.green {
+                background-color: #dcfce7;
+                color: #166534;
+            }
+    </style>
+</head>
+<body>
+
+    <div class="verify-container">
+        <h2>Verify Your Email</h2>
+        <input type="email" id="verifyEmail" placeholder="Enter your registered email" required>
+        <br />
+        <button class="btn verify-btn" onclick="verifyEmail()">Verify</button>
+        <button class="btn cancel-btn" onclick="window.location.href='registration.html'">Cancel</button>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function showToast(message, color = "red") {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.className = "toast " + color;
+            toast.style.display = "block";
+            setTimeout(() => {
+                toast.style.display = "none";
+            }, 3000);
+        }
+
+        function verifyEmail() {
+            const emailInput = document.getElementById("verifyEmail");
+            const email = emailInput.value.trim().toLowerCase();
+
+            if (!email) {
+                showToast("Please enter your email.", "red");
+                return;
+            }
+
+            fetch("https://localhost:7201/api/Users/validateemail?email=" + encodeURIComponent(email))
+                .then(response => {
+                    if (response.ok) {
+                        localStorage.setItem("verifiedEmail", email);
+                        window.location.href = "resetpassword.html";
+                    } else {
+                        showToast("Invalid email", "red");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error verifying email:", error);
+                    showToast("Error verifying email", "red");
+                });
+        }
+    </script>
+</body>
+</html>
