@@ -152,13 +152,14 @@
     </div>
 
     <div class="form-container" id="registerForm">
+        <span class="back-arrow" onclick="showForm('mainButtons')">⬅</span>
         <h3>Sign Up</h3>
-        <input type="text" id="regFirstName" placeholder="First Name">
-        <input type="text" id="regLastName" placeholder="Last Name">
-        <input type="email" id="regEmail" placeholder="Email">
-        <input type="password" id="regPassword" placeholder="Password">
-        <input type="text" id="regState" placeholder="State">
-        <input type="text" id="regOrg" placeholder="Organization (Optional)">
+        <input type="text" id="regFirstName" placeholder="First Name*">
+        <input type="text" id="regLastName" placeholder="Last Name*">
+        <input type="email" id="regEmail" placeholder="Email*">
+        <input type="password" id="regPassword" placeholder="Password*">
+        <input type="text" id="regState" placeholder="State*" required>
+        <input type="text" id="regOrg" placeholder="Organization">
         <button onclick="registerUser()">Register</button>
         <div class="link-text">
             Already have an account? <a href="#" onclick="showForm('loginForm')">Login here</a>
@@ -166,7 +167,8 @@
     </div>
 
     <div class="form-container" id="loginForm">
-        <h3><span class="back-arrow" onclick="showForm('registerForm')">⬅</span>Login</h3>
+        <span class="back-arrow" onclick="showForm('registerForm')">⬅</span>
+        <h3>Login</h3>
         <input type="email" id="loginEmail" placeholder="Email">
         <input type="password" id="loginPassword" placeholder="Password">
         <button onclick="loginUser()">Login</button>

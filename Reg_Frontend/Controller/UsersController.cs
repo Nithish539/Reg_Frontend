@@ -34,7 +34,7 @@ public class UsersController : ControllerBase
             return BadRequest(new { success = false, message = "Failed to reset password." });
     }
 
-    // Forgot Password (Check if user exists before showing reset link in frontend toast)
+    // Forgot Password 
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] EmailRequest request)
     {
@@ -46,7 +46,7 @@ public class UsersController : ControllerBase
         return Ok(new { success = true, message = "Reset link generated." });
     }
 
-    // ✅ Internal DTOs
+    // Internal DTOs
     public class EmailRequest
     {
         public string Email { get; set; }
