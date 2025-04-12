@@ -1,0 +1,337 @@
+﻿@{
+    ViewData["Title"] = "User Management";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Management</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f6f9;
+            color: #333;
+        }
+
+        h1 {
+            color: #00bcd4;
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 30px;
+        }
+
+        h2, h3 {
+            color: #444;
+            margin-bottom: 15px;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #263238, #37474f);
+            color: white;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+            .sidebar a {
+                display: block;
+                padding: 12px 15px;
+                margin: 10px 0;
+                color: white;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 8px;
+                text-decoration: none;
+                transition: background 0.3s;
+            }
+
+                .sidebar a:hover {
+                    background: rgba(255, 255, 255, 0.2);
+                }
+
+        .content {
+            flex: 1;
+            padding: 40px;
+            background: white;
+            border-radius: 20px 0 0 20px;
+            overflow-y: auto;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        input, select {
+            display: block;
+            width: 100%;
+            max-width: 400px;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 10px 16px;
+            margin-top: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .btn {
+            margin: 10px 5px 0 0;
+        }
+
+        .btn-blue {
+            background-color: #2196f3;
+            color: white;
+        }
+
+        .btn-red {
+            background-color: #f44336;
+            color: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        th, td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f5f5f5;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .comment-box {
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h1>VectorQ</h1>
+            <a href="#" onclick="showTab('users')">Users</a>
+            <a href="#" onclick="showTab('projects')">Projects</a>
+            <a href="#" onclick="showTab('tasks')">Tasks</a>
+            <a href="#" onclick="showTab('settings')">Settings</a>
+        </div>
+
+        <div class="content">
+            <!-- Users Tab -->
+            <div id="users" class="tab-content">
+                <h2>Users</h2>
+                <form id="userForm">
+                    <input type="text" id="firstName" placeholder="First Name" required>
+                    <input type="text" id="lastName" placeholder="Last Name" required>
+                    <input type="email" id="email" placeholder="E-Mail" required>
+                    <input type="password" id="password" placeholder="Password" required>
+                    <select id="role" required>
+                        <option value="" disabled selected>Select a role</option>
+                        <option value="Task Manager">Task Manager</option>
+                        <option value="Task Owner">Task Owner</option>
+                    </select>
+                    <button type="button" onclick="addUser()">Add User</button>
+                </form>
+                <table id="userTable">
+                    <tr>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Projects Tab -->
+            <div id="projects" class="tab-content hidden">
+                <h2>Projects</h2>
+                <form id="projectForm">
+                    <input type="text" id="projectName" placeholder="Project Name" required>
+                    <input type="text" id="projectId" placeholder="Project ID" required>
+                    <input type="text" id="projectType" placeholder="Project Type" required>
+                    <select id="applicationType" required>
+                        <option value="" disabled selected>Select Application Type</option>
+                        <option value="Commercial">Commercial</option>
+                        <option value="Residential">Residential</option>
+                    </select>
+                    <button type="button" onclick="addProject()">Add Project</button>
+                </form>
+                <table id="projectTable">
+                    <tr>
+                        <th>Project Name</th>
+                        <th>Project ID</th>
+                        <th>Project Type</th>
+                        <th>Application Type</th>
+                        <th>Actions</th>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Tasks Tab -->
+            <div id="tasks" class="tab-content hidden">
+                <h2>Tasks</h2>
+                <table id="taskTable">
+                    <tr>
+                        <th>Sr.No</th>
+                        <th>Task ID</th>
+                        <th>Task Name</th>
+                        <th>Task Date</th>
+                        <th>Task Status</th>
+                    </tr>
+                </table>
+
+                <h3>Task Details</h3>
+                <table id="taskDetailsTable">
+                    <tr>
+                        <th>Comment</th>
+                        <th>Actions</th>
+                    </tr>
+                </table>
+
+                <div class="comment-box">
+                    <input type="text" id="commentText" placeholder="Enter comment">
+                    <button onclick="addComment()">Submit</button>
+                </div>
+
+                <button class="btn btn-blue">Ready for Submission</button>
+                <button class="btn btn-red">Not Ready for Submission</button>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings" class="tab-content hidden">
+                <h2>Settings</h2>
+                <button class="btn">Change Password</button>
+                <button class="btn">Delete Account</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+        }
+
+        function addUser() {
+            let firstName = document.getElementById("firstName").value.trim();
+            let lastName = document.getElementById("lastName").value.trim();
+            let email = document.getElementById("email").value.trim();
+            let password = document.getElementById("password").value.trim();
+            let role = document.getElementById("role").value;
+
+            if (!firstName || !lastName || !email || !password || !role) {
+                alert("All fields are required!");
+                return;
+            }
+
+            let table = document.getElementById("userTable");
+            let row = table.insertRow();
+            row.insertCell(0).innerText = firstName;
+            row.insertCell(1).innerText = lastName;
+            row.insertCell(2).innerText = email;
+            row.insertCell(3).innerText = role;
+            row.insertCell(4).innerHTML = `
+                <button onclick="editRow(this)">Edit</button>
+                <button onclick="deleteRow(this)">Delete</button>
+            `;
+
+            document.getElementById("userForm").reset();
+        }
+
+        function addProject() {
+            let name = document.getElementById("projectName").value.trim();
+            let id = document.getElementById("projectId").value.trim();
+            let type = document.getElementById("projectType").value.trim();
+            let appType = document.getElementById("applicationType").value;
+
+            if (!name || !id || !type || !appType) {
+                alert("All fields are required!");
+                return;
+            }
+
+            let table = document.getElementById("projectTable");
+            let row = table.insertRow();
+            row.insertCell(0).innerText = name;
+            row.insertCell(1).innerText = id;
+            row.insertCell(2).innerText = type;
+            row.insertCell(3).innerText = appType;
+            row.insertCell(4).innerHTML = `
+                <button onclick="editRow(this)">Edit</button>
+                <button onclick="deleteRow(this)">Delete</button>
+            `;
+
+            document.getElementById("projectForm").reset();
+        }
+
+        function addComment() {
+            let comment = document.getElementById("commentText").value.trim();
+            if (!comment) return;
+
+            let table = document.getElementById("taskDetailsTable");
+            let row = table.insertRow();
+            row.insertCell(0).innerText = comment;
+            row.insertCell(1).innerHTML = `
+                <button onclick="editRow(this)">Edit</button>
+                <button onclick="deleteRow(this)">Delete</button>
+            `;
+
+            document.getElementById("commentText").value = "";
+        }
+
+        function editRow(button) {
+            let row = button.parentElement.parentElement;
+            for (let i = 0; i < row.cells.length - 1; i++) {
+                let currentText = row.cells[i].innerText;
+                row.cells[i].innerHTML = `<input type="text" value="${currentText}">`;
+            }
+            button.outerHTML = `<button onclick="saveRow(this)">Save</button>`;
+        }
+
+        function saveRow(button) {
+            let row = button.parentElement.parentElement;
+            for (let i = 0; i < row.cells.length - 1; i++) {
+                let val = row.cells[i].querySelector('input').value;
+                row.cells[i].innerText = val;
+            }
+            button.outerHTML = `<button onclick="editRow(this)">Edit</button>`;
+        }
+
+        function deleteRow(button) {
+            button.parentElement.parentElement.remove();
+        }
+    </script>
+</body>
+</html>

@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿﻿
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -169,7 +170,7 @@
 
         function showForgotPasswordToast() {
             const toast = document.getElementById("toast");
-            toast.innerHTML = `Click here to <a href="verifyEmail.html" target="_blank">reset your password</a>`;
+            toast.innerHTML = `Click the link to reset password <a href="verifyemail.html" target="_blank">https://localhost:7201/verifyemail.html</a>`;
             toast.style.display = "block";
             setTimeout(() => (toast.style.display = "none"), 10000);
         }
@@ -233,8 +234,7 @@
                         : { message: "Login successful" };
 
                     showToast(data.message || "Login successful");
-                    // Optional: Redirect to dashboard
-                    // window.location.href = "dashboard.html";
+                   
                 })
                 .catch(err => {
                     showToast(err.message);

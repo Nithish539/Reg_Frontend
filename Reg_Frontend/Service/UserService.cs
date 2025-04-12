@@ -1,171 +1,162 @@
 ﻿using System;
-using System.Data;
-using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using System.Security.Cryptography;
 
-public class UserService
+namespace Reg_Frontend.Models
 {
-    private readonly string _connectionString;
-
-    public UserService(IConfiguration configuration)
+    public class UserService
     {
-        _connectionString = configuration.GetConnectionString("DefaultConnection");
-    }
+        private readonly string _connectionString;
 
-    // Save new user using UserDto
-    public async Task<bool> SaveUserAsync(UserDto user)
-    {
-        try
+        public UserService(IConfiguration configuration)
         {
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
+        }
+
+        public async Task<bool> SaveUserAsync(UserDto user)
+        {
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
+
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 await conn.OpenAsync();
-
-                var passwordHash = BCrypt.Net.BCrypt.HashPassword(user.Password);
-
-                string query = @"
-                    INSERT INTO dbo.Users (FirstName, LastName, Email, PasswordHash, State, Organization)
-                    VALUES (@FirstName, @LastName, @Email, @PasswordHash, @State, @Organization)";
+                var query = @"INSERT INTO Users (FirstName, LastName, Email, Password, State, Organization) 
+                              VALUES (@FirstName, @LastName, @Email, @Password, @State, @Organization)";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@FirstName", user.FirstName);
                     cmd.Parameters.AddWithValue("@LastName", user.LastName);
                     cmd.Parameters.AddWithValue("@Email", user.Email.Trim().ToLower());
-                    cmd.Parameters.AddWithValue("@PasswordHash", passwordHash);
+                    cmd.Parameters.AddWithValue("@Password", hashedPassword);
                     cmd.Parameters.AddWithValue("@State", user.State);
-                    cmd.Parameters.AddWithValue("@Organization", string.IsNullOrWhiteSpace(user.Organization) ? DBNull.Value : (object)user.Organization);
+                    cmd.Parameters.AddWithValue("@Organization", string.IsNullOrEmpty(user.Organization) ? (object)DBNull.Value : user.Organization);
+
+                    int result = await cmd.ExecuteNonQueryAsync();
+                    return result > 0;
+                }
+            }
+        }
+
+        public async Task<User> GetUserByEmailAsync(string email)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                var command = new SqlCommand(
+                    "SELECT * FROM Users WHERE LOWER(LTRIM(RTRIM(Email))) = @Email", connection);
+                command.Parameters.AddWithValue("@Email", email.Trim().ToLower());
+
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    if (await reader.ReadAsync())
+                    {
+                        return new User
+                        {
+                            Email = reader["Email"].ToString(),
+                          Password = reader["Password"].ToString()
+                        };
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        public async Task<bool> ValidateUserAsync(string email, string password)
+        {
+            var user = await GetUserByEmailAsync(email);
+            return user != null && BCrypt.Net.BCrypt.Verify(password, user.Password);
+        }
+
+        public async Task<bool> ResetPasswordAsync(string email, string hashedPassword)
+        {
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                await conn.OpenAsync();
+
+                var query = @"UPDATE Users 
+                              SET Password = @Password, ResetToken = NULL, TokenExpiry = NULL 
+                              WHERE LOWER(Email) = @Email";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Password", hashedPassword);
+                    cmd.Parameters.AddWithValue("@Email", email.Trim().ToLower());
+
+                    int result = await cmd.ExecuteNonQueryAsync();
+                    return result > 0;
+                }
+            }
+        }
+
+        public async Task<bool> ValidateEmailAsync(string email)
+        {
+            return await GetUserByEmailAsync(email) != null;
+        }
+
+        public async Task<string> GenerateAndStoreResetTokenAsync(string email)
+        {
+            var token = GenerateSecureToken();
+            var expiry = DateTime.UtcNow.AddMinutes(30);
+
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                await conn.OpenAsync();
+
+                string query = @"UPDATE Users 
+                                 SET ResetToken = @Token, TokenExpiry = @Expiry 
+                                 WHERE LOWER(Email) = @Email";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Token", token);
+                    cmd.Parameters.AddWithValue("@Expiry", expiry);
+                    cmd.Parameters.AddWithValue("@Email", email.Trim().ToLower());
 
                     int rows = await cmd.ExecuteNonQueryAsync();
-                    return rows > 0;
+                    return rows > 0 ? token : null;
                 }
             }
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine("[SaveUserAsync(UserDto)] Error: " + ex.Message);
-            Console.WriteLine("[SaveUserAsync(UserDto)] StackTrace: " + ex.StackTrace);
-            return false;
-        }
-    }
 
-    // Validate user credentials
-    public async Task<bool> ValidateUserAsync(string email, string password)
-    {
-        try
+        public async Task<bool> IsResetTokenValidAsync(string email, string token)
         {
-            using (SqlConnection conn = new SqlConnection(_connectionString))
+            using (var connection = new SqlConnection(_connectionString))
             {
-                string query = "SELECT PasswordHash FROM dbo.Users WHERE LOWER(Email) = @Email";
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@Email", email.Trim().ToLower());
-                    await conn.OpenAsync();
+                await connection.OpenAsync();
 
-                    var result = await cmd.ExecuteScalarAsync();
-                    if (result != null)
-                    {
-                        string hashedPassword = result.ToString();
-                        return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
-                    }
-                    return false;
-                }
+                var command = new SqlCommand(
+                    @"SELECT COUNT(*) 
+                      FROM Users 
+                      WHERE LOWER(Email) = @Email 
+                      AND ResetToken = @Token 
+                      AND TokenExpiry > GETUTCDATE()", connection);
+
+                command.Parameters.AddWithValue("@Email", email.Trim().ToLower());
+                command.Parameters.AddWithValue("@Token", token);
+
+                var count = (int)await command.ExecuteScalarAsync();
+                return count > 0;
             }
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine("[ValidateUserAsync] Error: " + ex.Message);
-            return false;
-        }
-    }
 
-    // Check if email is already registered
-    public async Task<bool> ValidateEmailAsync(string email)
-    {
-        try
+        private string GenerateSecureToken()
         {
-            using (SqlConnection conn = new SqlConnection(_connectionString))
+            using (var rng = RandomNumberGenerator.Create())
             {
-                string query = "SELECT COUNT(*) FROM dbo.Users WHERE LOWER(Email) = @Email";
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@Email", email.Trim().ToLower());
-                    await conn.OpenAsync();
-
-                    int count = (int)await cmd.ExecuteScalarAsync();
-                    return count > 0;
-                }
+                byte[] tokenData = new byte[16];
+                rng.GetBytes(tokenData);
+                return Convert.ToBase64String(tokenData);
             }
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine("[ValidateEmailAsync] Error: " + ex.Message);
-            return false;
-        }
-    }
 
-    // Reset user password
-    public async Task<bool> ResetPasswordAsync(string email, string newHashedPassword)
-    {
-        try
+        internal async Task GetUserByResetTokenAsync(string token)
         {
-            using (SqlConnection conn = new SqlConnection(_connectionString))
-            {
-                string query = "UPDATE dbo.Users SET PasswordHash = @PasswordHash WHERE LOWER(Email) = @Email";
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@Email", email.Trim().ToLower());
-                    cmd.Parameters.AddWithValue("@PasswordHash", newHashedPassword);
-                    await conn.OpenAsync();
-
-                    return await cmd.ExecuteNonQueryAsync() > 0;
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("[ResetPasswordAsync] Error: " + ex.Message);
-            return false;
-        }
-    }
-
-    // Get user info by email
-    public async Task<User> GetUserByEmailAsync(string email)
-    {
-        try
-        {
-            using (SqlConnection conn = new SqlConnection(_connectionString))
-            {
-                string query = "SELECT FirstName, LastName, Email, PasswordHash, State, Organization FROM dbo.Users WHERE LOWER(Email) = @Email";
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@Email", email.Trim().ToLower());
-                    await conn.OpenAsync();
-
-                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
-                    {
-                        if (await reader.ReadAsync())
-                        {
-                            return new User
-                            {
-                                FirstName = reader["FirstName"].ToString(),
-                                LastName = reader["LastName"].ToString(),
-                                Email = reader["Email"].ToString(),
-                                Password = reader["PasswordHash"].ToString(),
-                                State = reader["State"].ToString(),
-                                Organization = reader["Organization"]?.ToString()
-                            };
-                        }
-                        return null;
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("[GetUserByEmailAsync] Error: " + ex.Message);
-            return null;
+      
         }
     }
 }
